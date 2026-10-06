@@ -164,6 +164,15 @@
     .geo-cell-name { color: #7a8fa2; font-size: 10px; }
     .geo-cell-value { color: var(--geo-color, #5d7388); font-size: 12px; font-weight: 700; }
     .geo-cell-note { color: #94a4b3; font-size: 9px; }
+    .flood-metrics { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 13px; }
+    .metric-cell {
+      display: flex; flex-direction: column; gap: 2px; padding: 10px 12px;
+      border: 1px solid #e4edf4; border-radius: 10px; background: #f9fbfd;
+    }
+    .metric-name { color: #7a8fa2; font-size: 10px; }
+    .metric-value { color: var(--metric-color, #3d627f); font-size: 15px; font-weight: 800; line-height: 1.2; }
+    .metric-unit { color: #94a4b3; font-size: 9px; }
+    @media (max-width: 700px) { .flood-metrics { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 700px) { .geo-grid { grid-template-columns: repeat(2, 1fr); } }
     .section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
     .section-head h2 { margin: 0; font-size: 14px; }
@@ -290,6 +299,21 @@
     .evac-legend span { display: inline-flex; align-items: center; gap: 5px; }
     .legend-line { display: inline-block; width: 16px; height: 3px; border-radius: 2px; background: #3b93d0; }
     .legend-line.best { background: #258b70; }
+    .instance-chain { display: grid; gap: 6px; margin-bottom: 12px; min-width: 0; }
+    .instance-chain code {
+      display: block; overflow-x: auto; min-width: 0; padding: 7px 10px; white-space: nowrap;
+      border: 1px solid #e4edf4; border-radius: 8px; background: #f9fbfd;
+      color: #3d627f; font-family: ui-monospace, Consolas, "Courier New", monospace; font-size: 10px;
+    }
+    .table-scroll { overflow-x: auto; min-width: 0; max-width: 100%; border: 1px solid #e7f0f7; border-radius: 12px; background: #fff; }
+    .right-column > .card { min-width: 0; }
+    .instance-table { width: 100%; min-width: 700px; border-collapse: collapse; font-size: 10px; }
+    .instance-table th, .instance-table td { padding: 7px 8px; border-bottom: 1px solid #eef4f9; text-align: left; white-space: nowrap; }
+    .instance-table thead th { background: #f4faff; color: #4b7fa9; font-weight: 700; }
+    .instance-table tbody tr:last-child td { border-bottom: 0; }
+    .instance-table tbody tr:hover { background: #fbfdff; }
+    .instance-table td.num { font-variant-numeric: tabular-nums; color: #5d7388; }
+    .instance-table td.best-cell { color: #1e7a5d; font-weight: 700; }
     .video-stage {
       position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden;
       border: 1px solid #e7f0f7; border-radius: 12px; background: #0c1a26;
@@ -516,25 +540,26 @@
               </div>
               <p id="risk-description" class="risk-description"></p>
             </div>
-            <div class="gauge" aria-label="参考分值仪表盘">
+            <div class="gauge" aria-label="预估积水深度仪表盘">
               <svg viewBox="0 0 96 96" role="img" aria-hidden="true">
                 <circle cx="48" cy="48" r="40" fill="none" stroke="#e6eef4" stroke-width="9"></circle>
                 <circle id="risk-gauge-arc" cx="48" cy="48" r="40" fill="none" stroke="#258b70" stroke-width="9"
                         stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3"
                         transform="rotate(-90 48 48)"></circle>
               </svg>
-              <div class="gauge-center"><strong id="risk-score">0</strong><span>参考分值</span></div>
+              <div class="gauge-center"><strong id="risk-score">0.00</strong><span>积水深度 · 米</span></div>
             </div>
           </div>
-          <div id="factor-list" class="factor-list" aria-label="主要评估因素"></div>
+          <div id="factor-list" class="factor-list" aria-label="水量平衡计算"></div>
+          <div id="flood-metrics" class="flood-metrics" aria-label="内涝水量平衡模型结果"></div>
           <div id="geo-grid" class="geo-grid" aria-label="地质与防汛因素"></div>
-          <p class="scoring-note">演示规则：降雨、持续时间、埋深、出入口、地势和土壤透水性加分；排水与防汛设施减分。总分 0–3 为低、4–7 为中、8–11 为高、12 分及以上为很高；这些阈值并非行业标准。</p>
+          <p class="scoring-note">内涝模型：地表产流用推理公式 Q=C·I·A（径流系数 C 由土壤透水决定，汇水面积 A 随出入口与地势变化，防汛设施按挡水系数减少进水量），再与排水抽排量做水量平衡，得到站台积水深度；按 0.15 / 0.30 / 0.50 米阈值分为低、中、高、很高。参数为工程参考取值，非实测标定。</p>
         </article>
 
         <article class="card">
           <div class="section-head">
-            <div><h2>风险情景变化</h2><p>假设当前降雨条件持续，展示未来数小时的规则推演，不是天气预报。</p></div>
-            <span class="legend"><span class="legend-dot"></span>参考风险分值</span>
+            <div><h2>风险情景变化（积水演化）</h2><p>假设当前降雨持续，按水量平衡模型推演未来数小时的站台积水深度，不是天气预报。</p></div>
+            <span class="legend"><span class="legend-dot"></span>预估积水深度（米）</span>
           </div>
           <div class="chart-wrap">
             <svg id="trend-chart" viewBox="0 0 760 202" role="img" aria-label="未来数小时风险情景变化图"></svg>
@@ -543,7 +568,7 @@
 
         <article class="card">
           <div class="section-head">
-            <div><h2>车站内涝与客流疏散示意</h2><p>示意水位变化方向和通往出入口的客流方向。</p></div>
+            <div><h2>车站内涝与客流疏散示意</h2><p>按行人流模型分配各出口客流，并标出走行时间最短的最优路线。</p></div>
             <span id="station-label" class="small-badge">单站示意</span>
           </div>
           <div class="diagram-wrap">
@@ -551,9 +576,21 @@
           </div>
           <div class="diagram-note">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <span>箭头仅表达示意方向；未使用真实站点平面图、出口通行能力或实时客流，不可用于实际疏散安排。</span>
+            <span>疏散采用行人流模型：出口通行能力 = 有效宽度 × 比流量，步行速度随积水深度折减，按等清空时间原则分配客流。未使用真实站点平面图与实时客流，不可用于实际疏散安排。</span>
           </div>
           <div id="evac-legend" class="evac-legend" aria-label="疏散线路图例"></div>
+        </article>
+
+        <article class="card">
+          <div class="section-head">
+            <div><h2>计算实例（疏散模型代入验证）</h2><p>上方为当前输入的公式代入过程；下表为 4 组真实站点对照案例，数值与疏散图完全一致。</p></div>
+            <span class="small-badge">公式验证</span>
+          </div>
+          <div id="instance-chain" class="instance-chain" aria-label="当前输入的公式代入过程"></div>
+          <div class="table-scroll">
+            <table id="instance-table" class="instance-table" aria-label="疏散模型计算实例"></table>
+          </div>
+          <p class="scoring-note">真实数据锚点：站名与换乘线路数（Wikidata）。估算值：埋深、出入口数量、站内客流。公式推导与符号说明见 README 的"客流疏散——Fruin 行人流模型 + 等清空时间最优分配"。</p>
         </article>
 
       </section>
@@ -601,10 +638,10 @@
     "use strict";
 
     const RISK_LEVELS = [
-      { name: "低", color: "#258b70", tint: "#eff9f5", border: "#d8eee5", description: "当前输入下，演示规则给出的相对风险较低。仍请结合现场情况判断。" },
-      { name: "中", color: "#c98625", tint: "#fff8eb", border: "#f2e4c4", description: "当前输入下，部分因素可能增加风险；此等级仅表示演示规则的相对判断。" },
-      { name: "高", color: "#db6d39", tint: "#fff3ed", border: "#f1ddd2", description: "多个因素叠加后演示分值偏高；这不是实际预警，请勿据此单独决策。" },
-      { name: "很高", color: "#d84f58", tint: "#fff0f1", border: "#f2d8da", description: "演示规则给出较高参考分值；请勿将其视为官方预警或真实风险预测。" }
+      { name: "低", color: "#258b70", tint: "#eff9f5", border: "#d8eee5", description: "预估积水深度不足 0.15 米，道床可能见少量积水。请关注现场排水情况，保持巡查。" },
+      { name: "中", color: "#c98625", tint: "#fff8eb", border: "#f2e4c4", description: "预估积水深度 0.15–0.30 米，轨行区积水风险升高。建议加强警戒与排水检查。" },
+      { name: "高", color: "#db6d39", tint: "#fff3ed", border: "#f1ddd2", description: "预估积水深度 0.30–0.50 米，站台可能进水。建议限流、准备停运并组织疏散。" },
+      { name: "很高", color: "#d84f58", tint: "#fff0f1", border: "#f2d8da", description: "预估积水深度达到 0.50 米以上，站台严重积水。必须立即停运并组织乘客疏散。" }
     ];
 
     const byId = (id) => document.getElementById(id);
@@ -1118,25 +1155,31 @@
       const values = lastValues || currentInputs();
       const assessment = lastAssessment || calculateAssessment(values);
       const level = RISK_LEVELS[assessment.levelIndex];
+      const model = assessment.model;
+      const evac = runEvacModel(values, model.hFinal);
+      const totalMin = Math.round(evac.totalSeconds / 6) / 10;
       const rows = [
         ["车站", `${values.city || "—"} · ${values.station || "未命名车站"}`],
         ["评估时间", new Date().toLocaleString("zh-CN")],
         ["天气输入", `降雨强度 ${values["rain-intensity"]} 毫米/小时，持续 ${values["rain-duration"]} 小时`],
         ["站内客流（示意）", `${Number(values.passengers).toLocaleString("zh-CN")} 人`],
-        ["参考分值 / 等级", `${assessment.score} 分 · 风险${level.name}`],
-        ["加分因素", assessment.factors.filter((factor) => factor.points > 0).map((factor) => `${factor.label} +${factor.points}`).join("、") || "无"],
-        ["减分因素", assessment.mitigation.filter((factor) => factor.points > 0).map((factor) => `${factor.label} -${factor.points}`).join("、") || "无"]
+        ["预估积水深度 / 等级", `${model.hFinal.toFixed(2)} 米 · 风险${level.name}`],
+        ["水量平衡", `进水量 ${fmtQ(model.qIn)} m³/h，排水 ${fmtQ(model.qOut)} m³/h，净积水 ${fmtQ(model.qNet)} m³/h`],
+        ["疏散时间", `总疏散约 ${totalMin} 分钟（含 ${EVAC_MODEL.reactionTime} 秒反应时间）`],
+        ["最优疏散路线", `出口 ${evac.tWalk.indexOf(Math.min(...evac.tWalk)) + 1}（走行 ${Math.round(Math.min(...evac.tWalk))} 秒）`]
       ];
-      const detailRows = [...assessment.factors, ...assessment.mitigation]
-        .map((factor) => `<tr><th>${factor.label}</th><td>${factor.detail}（${factor.points > 0 && assessment.mitigation.includes(factor) ? "减" : "加"} ${factor.points} 分）</td></tr>`)
+      const detailRows = assessment.factors
+        .map((factor) => `<tr><th>${factor.label}</th><td>${factor.detail}</td></tr>`)
+        .concat(assessment.mitigation.map((factor) => `<tr><th>${factor.label}</th><td>${factor.detail}</td></tr>`))
         .join("");
       return `
         <h1>地铁内涝风险评估报告（演示）</h1>
         <p>生成时间：${new Date().toLocaleString("zh-CN")}</p>
         <table>${rows.map(([label, value]) => `<tr><th>${label}</th><td>${value}</td></tr>`).join("")}</table>
-        <h2>各项输入与计分</h2>
+        <h2>模型计算明细</h2>
         <table>${detailRows}</table>
-        <p class="report-note"><strong>使用边界：</strong>本报告由简化演示规则生成，评分阈值并非行业标准，也未经专业水文、地质或运营验证；趋势图与疏散示意均为说明性示意。请勿用于实际运营决策、预警发布或应急指挥。所有数值请以现场核实为准。</p>
+        <p class="report-note"><strong>模型依据：</strong>内涝严重程度采用地表产流（推理公式 Q=C·I·A）与车站水量平衡（进水量 − 排水量 = 积水增长）估算站台积水深度，并按 0.15 / 0.30 / 0.50 米阈值分级；客流疏散采用行人流模型（Fruin 比流量、有效宽度、自由步行速度受积水折减）与等清空时间最优分配估算每出口人数与疏散时间。</p>
+        <p class="report-note"><strong>使用边界：</strong>模型参数为工程参考取值（可调），非实测标定；未使用真实站点平面图、泵组实测能力或实时客流。结果仅供演示与学习，请勿用于实际运营决策、预警发布或应急指挥。</p>
       `;
     }
 
@@ -1161,76 +1204,161 @@
       return values;
     }
 
+    // ===================== 内涝水量平衡模型 =====================
+    // 思路：地表产流（推理公式 Q=C·I·A）→ 雨水由出入口汇入车站 → 与排水抽排能力做水量平衡 → 得到站台积水深度。
+    // 以下参数为工程参考取值（可调），非实测标定值。
+    const FLOOD_MODEL = {
+      catchmentPerEntrance: 3000,            // 每出入口汇水面积（m²）：入口台阶及周边集水区的地表径流汇入面积
+      terrainAreaFactor: [0.8, 1.0, 1.5],    // 地势对汇水面积的影响（低洼汇水更多）
+      soilRunoff: [0.70, 0.85, 0.95],        // 土壤透水性→径流系数 C（透水差径流大）
+      pumpBase: [60, 180, 300],              // 排水等级对应的抽排能力基数（m³/h）
+      barrierFactor: [1.0, 0.85, 0.70],      // 防汛设施挡水系数：减少地表水进入车站（越完善进水量越少）
+      headLoss: 0.015,                       // 埋深对排水效率的扬程折减系数（1/m）
+      platformBase: 1200,                    // 站台及轨行区有效蓄水面积基数（m²）
+      platformPerEntrance: 180,              // 每出入口增加的蓄水面积（m²）
+      depthThresholds: [0.15, 0.30, 0.50],   // 积水深度分级阈值（米）：警戒 / 停运 / 严重
+      maxDepth: 3                            // 展示上限（米）
+    };
+
+    const clampInt = (value, lo, hi) => Math.min(hi, Math.max(lo, Math.round(Number(value) || 0)));
+    const fmtQ = (value) => (Math.abs(value) >= 100 ? Math.round(value).toLocaleString("zh-CN") : value.toFixed(1));
+
+    function runFloodModel(values) {
+      const I = Math.max(0, Number(values["rain-intensity"]) || 0);   // 降雨强度 mm/h
+      const T = Math.max(0, Number(values["rain-duration"]) || 0);    // 持续时间 h
+      const n = Math.max(1, Math.round(Number(values.entrances) || 1));
+      const terrain = clampInt(values.terrain, 0, 2);
+      const soil = clampInt(values.soil, 0, 2);
+      const drainage = clampInt(values.drainage, 0, 2);
+      const barrier = clampInt(values.barrier, 0, 2);
+      const buried = Math.max(0, Number(values.depth) || 0);          // 埋深 m
+
+      const C = FLOOD_MODEL.soilRunoff[soil];
+      const area = n * FLOOD_MODEL.catchmentPerEntrance * FLOOD_MODEL.terrainAreaFactor[terrain];
+      const barrierFactor = FLOOD_MODEL.barrierFactor[barrier];
+      const qIn = C * I * area / 1000 * barrierFactor;                // 推理公式：Q = C·I·A（防汛设施挡水折减），换算为 m³/h
+      const pumpBase = FLOOD_MODEL.pumpBase[drainage];
+      const efficiency = 1 / (1 + FLOOD_MODEL.headLoss * buried);     // 埋深扬程折减
+      const qOut = pumpBase * efficiency;
+      const qNet = qIn - qOut;                                        // 净积水速率 m³/h
+      const platformArea = FLOOD_MODEL.platformBase + n * FLOOD_MODEL.platformPerEntrance;
+      const riseRate = qNet > 0 ? qNet / platformArea : 0;            // 水位上涨速率 m/h
+      const hFinal = Math.min(FLOOD_MODEL.maxDepth, Math.max(0, riseRate * T));
+
+      const th = FLOOD_MODEL.depthThresholds;
+      let levelIndex = 0;
+      if (hFinal >= th[2]) levelIndex = 3;
+      else if (hFinal >= th[1]) levelIndex = 2;
+      else if (hFinal >= th[0]) levelIndex = 1;
+
+      return {
+        C, area, qIn, qOut, qNet, platformArea, riseRate, hFinal, levelIndex,
+        timeTo015: riseRate > 0 ? th[0] / riseRate : Infinity,
+        timeTo030: riseRate > 0 ? th[1] / riseRate : Infinity,
+        buried, entrances: n
+      };
+    }
+
+    function depthToLevel(h) {
+      const th = FLOOD_MODEL.depthThresholds;
+      return h >= th[2] ? 3 : h >= th[1] ? 2 : h >= th[0] ? 1 : 0;
+    }
+
     function calculateAssessment(values) {
-      const rainfall = values["rain-intensity"];
-      const duration = values["rain-duration"];
-      const depth = values.depth;
-      const entrances = values.entrances;
-      const rainfallPoints = rainfall < 10 ? 0 : rainfall < 25 ? 1 : rainfall < 50 ? 2 : rainfall < 100 ? 3 : 4;
-      const durationPoints = duration < 1 ? 0 : duration < 3 ? 1 : duration < 6 ? 2 : duration < 12 ? 3 : 4;
-      const depthPoints = depth < 10 ? 0 : depth < 20 ? 1 : depth < 30 ? 2 : 3;
-      const entrancePoints = entrances <= 2 ? 0 : entrances <= 4 ? 1 : 2;
+      const model = runFloodModel(values);
       const factors = [
-        { label: "降雨", points: rainfallPoints, detail: `降雨 ${rainfall} 毫米/小时` },
-        { label: "持续时间", points: durationPoints, detail: `持续 ${duration} 小时` },
-        { label: "车站埋深", points: depthPoints, detail: `埋深 ${depth} 米` },
-        { label: "出入口", points: entrancePoints, detail: `${entrances} 个出入口` },
-        { label: "周边地势", points: values.terrain, detail: ["地势较高", "一般城市环境", "低洼或临近水体"][values.terrain] },
-        { label: "土壤透水", points: values.soil, detail: ["透水性较好", "一般透水性", "透水性较差"][values.soil] }
+        { label: "降雨产流", points: model.qIn > 0 ? 1 : 0, detail: `进水量 ${fmtQ(model.qIn)} m³/h（推理公式 Q=C·I·A）` },
+        { label: "汇水面积", points: model.area >= 3000 ? 1 : 0, detail: `约 ${fmtQ(model.area)} m²（${model.entrances} 个出入口汇入）` },
+        { label: "净积水速率", points: model.qNet > 0 ? 1 : 0, detail: `净积水 ${fmtQ(model.qNet)} m³/h，水位上涨 ${model.riseRate.toFixed(3)} m/h` }
       ];
       const mitigation = [
-        { label: "排水", points: values.drainage, detail: ["排水较弱", "排水一般", "排水较强"][values.drainage] },
-        { label: "防汛设施", points: values.barrier, detail: ["设施较少或不明确", "防汛设施一般", "防汛设施较完善"][values.barrier] }
+        { label: "排水抽排", points: model.qOut > 0 ? 1 : 0, detail: `排水能力 ${fmtQ(model.qOut)} m³/h（含埋深扬程折减）` },
+        { label: "防汛设施", points: clampInt(values.barrier, 0, 2) > 0 ? 1 : 0, detail: `挡水系数 ${FLOOD_MODEL.barrierFactor[clampInt(values.barrier, 0, 2)]}（${["设施较少或不明确", "防汛设施一般", "防汛设施较完善"][clampInt(values.barrier, 0, 2)]}）` }
       ];
-      const rawScore = factors.reduce((sum, factor) => sum + factor.points, 0) - mitigation.reduce((sum, factor) => sum + factor.points, 0);
-      const score = Math.max(0, rawScore);
-      const levelIndex = score <= 3 ? 0 : score <= 7 ? 1 : score <= 11 ? 2 : 3;
-      return { score, levelIndex, factors, mitigation };
+      return { model, levelIndex: model.levelIndex, score: model.hFinal, factors, mitigation };
     }
 
     function renderAssessment(values) {
       const assessment = calculateAssessment(values);
       lastValues = values;
       lastAssessment = assessment;
+      const model = assessment.model;
       const level = RISK_LEVELS[assessment.levelIndex];
       const card = byId("risk-card");
       card.style.setProperty("--risk-color", level.color);
       card.style.setProperty("--risk-tint", level.tint);
       card.style.setProperty("--risk-border", level.border);
       byId("risk-level").textContent = `风险${level.name}`;
-      renderGauge(assessment.score, level.color);
+      renderGauge(model.hFinal, level.color);
       byId("risk-description").textContent = level.description;
+
+      // 因素标签：显示水量平衡模型的计算结果
       const chips = [
-        ...assessment.factors.filter((factor) => factor.points > 0).map((factor) => `${factor.label} +${factor.points}`),
-        ...assessment.mitigation.filter((factor) => factor.points > 0).map((factor) => `${factor.label} -${factor.points}`)
+        `进水量 ${fmtQ(model.qIn)} m³/h`,
+        `排水 ${fmtQ(model.qOut)} m³/h`,
+        model.qNet > 0 ? `净积水 ${fmtQ(model.qNet)} m³/h` : `净排水 ${fmtQ(-model.qNet)} m³/h`
       ];
-      if (chips.length === 0) chips.push("当前演示规则未检出加分因素");
-      byId("factor-list").replaceChildren(...chips.map((text, index) => {
+      if (Number.isFinite(model.timeTo015) && model.hFinal >= FLOOD_MODEL.depthThresholds[0]) {
+        chips.push(`达警戒水位约 ${model.timeTo015.toFixed(1)} 小时`);
+      }
+      byId("factor-list").replaceChildren(...chips.map((text) => {
         const chip = document.createElement("span");
-        chip.className = `factor-chip${text.includes("-") ? " positive" : ""}`;
+        chip.className = `factor-chip${text.startsWith("排水") ? " positive" : ""}`;
         chip.textContent = text;
         return chip;
       }));
+
+      renderFloodMetrics(model, level);
       renderTrend(values, assessment);
       renderStation(values, assessment);
+      renderInstance(values, assessment);
       byId("station-label").textContent = `${values.city ? `${values.city} · ` : ""}${values.station || "未命名车站"} · 示意`;
       const homeBadge = byId("home-badge");
       homeBadge.hidden = false;
       homeBadge.style.setProperty("--badge-color", level.color);
       homeBadge.style.setProperty("--badge-tint", level.tint);
       homeBadge.style.setProperty("--badge-border", level.border);
-      byId("home-badge-text").textContent = `当前参考等级：风险${level.name}`;
+      byId("home-badge-text").textContent = `当前参考等级：风险${level.name} · 预估积水 ${model.hFinal.toFixed(2)} 米`;
       renderGeoGrid(values);
       updateWeatherScene(values["rain-intensity"]);
     }
 
-    function renderGauge(score, color) {
+    function renderFloodMetrics(model, level) {
+      const box = byId("flood-metrics");
+      if (!box) return;
+      const cells = [
+        { label: "预估积水深度", value: model.hFinal.toFixed(2), unit: "米", color: level.color },
+        { label: "降雨进水量", value: fmtQ(model.qIn), unit: "m³/h" },
+        { label: "排水抽排量", value: fmtQ(model.qOut), unit: "m³/h" },
+        { label: "净积水速率", value: `${model.qNet > 0 ? "+" : ""}${fmtQ(model.qNet)}`, unit: "m³/h" },
+        { label: "水位上涨速率", value: model.riseRate.toFixed(3), unit: "米/小时" },
+        { label: "达到警戒水位", value: Number.isFinite(model.timeTo015) ? `${model.timeTo015.toFixed(1)} 小时` : "不会达到", unit: "≥0.15 米" }
+      ];
+      box.replaceChildren(...cells.map((cell) => {
+        const item = document.createElement("div");
+        item.className = "metric-cell";
+        if (cell.color) item.style.setProperty("--metric-color", cell.color);
+        const name = document.createElement("span");
+        name.className = "metric-name";
+        name.textContent = cell.label;
+        const value = document.createElement("span");
+        value.className = "metric-value";
+        value.textContent = cell.value;
+        const unit = document.createElement("span");
+        unit.className = "metric-unit";
+        unit.textContent = cell.unit;
+        item.append(name, value, unit);
+        return item;
+      }));
+    }
+
+    function renderGauge(hFinal, color) {
       const arc = byId("risk-gauge-arc");
       const circumference = 2 * Math.PI * 40;
-      const fraction = Math.max(0, Math.min(1, score / 17));
+      const fraction = Math.max(0, Math.min(1, hFinal / 1.5));
       arc.style.stroke = color;
       arc.setAttribute("stroke-dashoffset", String(circumference * (1 - fraction)));
-      byId("risk-score").textContent = String(score);
+      byId("risk-score").textContent = hFinal.toFixed(2);
     }
 
     function renderGeoGrid(values) {
@@ -1271,40 +1399,196 @@
       defs.append(gradient);
       svg.append(defs);
 
+      const model = assessment.model;
       const left = 45, right = 735, top = 18, bottom = 160;
-      const maxScore = 17;
-      for (let tick = 0; tick <= 16; tick += 4) {
-        const y = bottom - (tick / maxScore) * (bottom - top);
+      const maxDepth = Math.max(1.5, Math.ceil(model.hFinal / 0.5) * 0.5);
+      for (let d = 0; d <= maxDepth; d += 0.5) {
+        const y = bottom - (d / maxDepth) * (bottom - top);
         svg.append(createSvg("line", { x1: left, x2: right, y1: y, y2: y, class: "chart-grid" }));
-        svg.append(createSvg("text", { x: left - 12, y: y + 3, "text-anchor": "end", class: "chart-axis" }, String(tick)));
+        svg.append(createSvg("text", { x: left - 12, y: y + 3, "text-anchor": "end", class: "chart-axis" }, d.toFixed(1)));
       }
-      svg.append(createSvg("text", { x: 10, y: 15, class: "chart-axis" }, "分值"));
+      svg.append(createSvg("text", { x: 10, y: 15, class: "chart-axis" }, "米"));
+
+      // 警戒 / 停运 / 严重水位参考线
+      const refLines = [
+        { h: FLOOD_MODEL.depthThresholds[0], color: "#c98625", label: "警戒 0.15m" },
+        { h: FLOOD_MODEL.depthThresholds[1], color: "#db6d39", label: "停运 0.30m" },
+        { h: FLOOD_MODEL.depthThresholds[2], color: "#d84f58", label: "严重 0.50m" }
+      ];
+      for (const ref of refLines) {
+        if (ref.h > maxDepth) continue;
+        const y = bottom - (ref.h / maxDepth) * (bottom - top);
+        svg.append(createSvg("line", { x1: left, x2: right, y1: y, y2: y, stroke: ref.color, "stroke-width": 1, "stroke-dasharray": "4 4", opacity: ".55" }));
+        svg.append(createSvg("text", { x: right, y: y - 3, "text-anchor": "end", class: "chart-axis", fill: ref.color }, ref.label));
+      }
 
       trendData = [];
       for (let hour = 1; hour <= 6; hour++) {
-        const scenario = { ...values, "rain-duration": Math.min(values["rain-duration"], hour) };
-        const projected = calculateAssessment(scenario);
+        const h = Math.min(FLOOD_MODEL.maxDepth, model.riseRate * hour); // 假设降雨持续，积水按上涨速率线性累积
         trendData.push({
           x: left + ((hour - 1) / 5) * (right - left),
-          y: bottom - (Math.min(projected.score, maxScore) / maxScore) * (bottom - top),
-          score: projected.score,
+          y: bottom - (Math.min(h, maxDepth) / maxDepth) * (bottom - top),
+          depth: h,
           hour,
-          levelIndex: projected.levelIndex,
-          assessment: projected
+          levelIndex: depthToLevel(h)
         });
       }
-      // 完整静态曲线：彩色线 + 彩色点
-      const fullPath = trendData.map((point, index) => `${index ? "L" : "M"} ${point.x} ${point.y}`).join(" ");
+      // 完整静态曲线：彩色线 + 按等级着色的点
+      const fullPath = trendData.map((point, index) => `${index ? "L" : "M"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
       const areaPath = `${fullPath} L ${right} ${bottom} L ${left} ${bottom} Z`;
       svg.append(createSvg("path", { d: areaPath, class: "chart-fill" }));
       svg.append(createSvg("path", { d: fullPath, fill: "none", stroke: "#4c9bd8", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }));
       trendData.forEach((point) => {
-        svg.append(createSvg("circle", { cx: point.x, cy: point.y, r: 5, fill: "#fff", stroke: "#4c9bd8", "stroke-width": 2.5 }));
-        svg.append(createSvg("text", { x: point.x, y: point.y - 11, "text-anchor": "middle", class: "chart-axis" }, String(point.score)));
+        const pointColor = RISK_LEVELS[point.levelIndex].color;
+        svg.append(createSvg("circle", { cx: point.x, cy: point.y, r: 5, fill: "#fff", stroke: pointColor, "stroke-width": 2.5 }));
+        svg.append(createSvg("text", { x: point.x, y: point.y - 11, "text-anchor": "middle", class: "chart-axis" }, point.depth.toFixed(2)));
         svg.append(createSvg("text", { x: point.x, y: bottom + 23, "text-anchor": "middle", class: "chart-axis" }, `第 ${point.hour} 小时`));
       });
       const level = RISK_LEVELS[assessment.levelIndex];
-      svg.setAttribute("aria-label", `当前情景参考分值 ${assessment.score} 分，未来六小时示意趋势；等级为风险${level.name}`);
+      svg.setAttribute("aria-label", `假设降雨持续，未来六小时站台积水深度演化；当前预估 ${model.hFinal.toFixed(2)} 米，等级为风险${level.name}`);
+    }
+
+    // ===================== 客流疏散模型（行人流模型） =====================
+    // 参考 Fruin 服务水平与《地铁设计规范》常用取值：楼梯上行比流量、有效宽度、自由步行速度。
+    const EVAC_MODEL = {
+      platformHalfWidth: 70,   // 站台一半长度（米），乘客以站台中心为代表性起点
+      stairRiseRatio: 1.7,     // 楼梯坡道换算：水平距离 = 埋深 × 1.7（约 30° 坡）
+      concourse: 15,           // 站厅水平走行距离（米）
+      exitStair: 6,            // 出口上行楼梯长度（米）
+      vWalk: 1.2,              // 自由步行速度（米/秒）
+      vStair: 0.6,             // 楼梯上行速度（米/秒）
+      waterSlow: 0.5,          // 积水对步行速度的折减：0.5 米深时速度减半
+      exitWidth: 1.8,          // 出口通道宽度（米）
+      boundaryLayer: 0.3,      // 有效宽度边界层（两侧各 0.15 米）
+      specificFlow: 0.85,      // 楼梯上行比流量（人/米/秒，Fruin 参考值）
+      reactionTime: 60         // 察觉险情与启动疏散的反应时间（秒）
+    };
+
+    function exitLayoutPx(n) {
+      const centerX = 376;
+      if (n === 1) return [centerX];
+      if (n === 2) return [230, 522];
+      if (n === 3) return [180, 376, 572];
+      return Array.from({ length: n }, (_, i) => 70 + ((i + 0.5) / n) * 620);
+    }
+
+    // 等清空时间最优分配（water-filling）：所有被使用的出口清空时间趋于相同，使总疏散时间最短
+    function allocateByWaterFilling(N, tWalk, CperMin) {
+      const counts = new Array(tWalk.length).fill(0);
+      if (N <= 0) return { counts, used: [], clearMin: 0 };
+      const order = tWalk.map((t, i) => ({ i, t })).sort((a, b) => a.t - b.t);
+      let lo = 0;
+      let hi = Math.max(...tWalk) / 60 + N / Math.max(1, CperMin) + 1;
+      for (let k = 0; k < 40; k++) {
+        const mid = (lo + hi) / 2;
+        let served = 0;
+        for (const { t } of order) served += Math.max(0, CperMin * (mid - t / 60));
+        if (served >= N) hi = mid; else lo = mid;
+      }
+      const clearMin = hi;
+      let remaining = N;
+      const used = [];
+      for (const { i } of order) {
+        const cap = Math.max(0, CperMin * (clearMin - tWalk[i] / 60));
+        if (cap <= 0) continue;
+        const take = Math.min(remaining, Math.round(cap));
+        if (take > 0) { counts[i] = take; remaining -= take; used.push(i); }
+      }
+      if (remaining > 0) {
+        const best = order[0].i;
+        counts[best] += remaining;
+        if (!used.includes(best)) used.push(best);
+      }
+      return { counts, used, clearMin };
+    }
+
+    function runEvacModel(values, hFinal) {
+      const N = Math.max(0, Number(values.passengers) || 0);
+      const n = Math.max(1, Math.min(8, Math.round(Number(values.entrances) || 1)));
+      const buried = Math.max(0, Number(values.depth) || 0);
+      const h = Math.max(0, Number(hFinal) || 0);
+      const px = exitLayoutPx(n);
+      const xm = px.map((x) => (x - 376) * (EVAC_MODEL.platformHalfWidth * 2 / 612)); // 米
+      const vWalk = EVAC_MODEL.vWalk * Math.max(0.3, 1 - EVAC_MODEL.waterSlow * Math.min(1, h / 0.5));
+      const stairLen = buried * EVAC_MODEL.stairRiseRatio;
+      const tWalk = xm.map((x) => (Math.abs(x) + EVAC_MODEL.concourse) / vWalk + (stairLen + EVAC_MODEL.exitStair) / EVAC_MODEL.vStair);
+      const width = Math.max(0.6, EVAC_MODEL.exitWidth - EVAC_MODEL.boundaryLayer);
+      const C = EVAC_MODEL.specificFlow * width * 60; // 人/分钟
+      const alloc = allocateByWaterFilling(N, tWalk, C);
+      const totalSeconds = EVAC_MODEL.reactionTime + alloc.clearMin * 60;
+      return { n, px, xm, vWalk, stairLen, tWalk, width, C, counts: alloc.counts, used: alloc.used, clearMin: alloc.clearMin, totalSeconds, hFinal: h };
+    }
+
+    // ---- 计算实例：4 组对照案例（站名与换乘线路数为公开数据；埋深/出入口/客流为估算） ----
+    const INSTANCE_CASES = [
+      { name: "普通站 · 小雨", anchor: "无换乘站", values: { "rain-intensity": 5, "rain-duration": 3, depth: 10, entrances: 2, passengers: 1000, terrain: 1, soil: 1, drainage: 1, barrier: 1 } },
+      { name: "普通站 · 中雨", anchor: "无换乘站", values: { "rain-intensity": 50, "rain-duration": 4, depth: 10, entrances: 2, passengers: 1000, terrain: 1, soil: 1, drainage: 1, barrier: 1 } },
+      { name: "体育西路站（广州）· 强降雨", anchor: "三线换乘", values: { "rain-intensity": 60, "rain-duration": 6, depth: 15, entrances: 6, passengers: 3000, terrain: 1, soil: 1, drainage: 1, barrier: 1 } },
+      { name: "北京西站 · 极端暴雨", anchor: "枢纽 · 两线换乘", values: { "rain-intensity": 120, "rain-duration": 12, depth: 19, entrances: 7, passengers: 3600, terrain: 2, soil: 1, drainage: 1, barrier: 1 } }
+    ];
+
+    function renderInstance(values, assessment) {
+      const chainBox = byId("instance-chain");
+      const table = byId("instance-table");
+      if (!chainBox || !table || !values) return;
+      const model = assessment.model;
+      const buried = Math.max(0, Number(values.depth) || 0);
+      const stairLen = EVAC_MODEL.stairRiseRatio * buried + EVAC_MODEL.exitStair;
+      const evac = runEvacModel(values, model.hFinal);
+      const bestIndex = evac.tWalk.indexOf(Math.min(...evac.tWalk));
+      const chains = [
+        `v(h) = ${EVAC_MODEL.vWalk} × max(0.3, 1 − ${EVAC_MODEL.waterSlow} × min(1, ${model.hFinal.toFixed(2)} / 0.5)) = ${evac.vWalk.toFixed(3)} m/s`,
+        `W_e = W − δ = ${EVAC_MODEL.exitWidth} − ${EVAC_MODEL.boundaryLayer} = ${evac.width.toFixed(1)} m`,
+        `C = q_s × W_e × 60 = ${EVAC_MODEL.specificFlow} × ${evac.width.toFixed(1)} × 60 = ${evac.C.toFixed(1)} 人/分钟`,
+        `楼梯段 = r·H + L_e = ${EVAC_MODEL.stairRiseRatio} × ${buried} + ${EVAC_MODEL.exitStair} = ${stairLen.toFixed(1)} m`,
+        `t_walk,i = (|x_i| + ${EVAC_MODEL.concourse}) / v(h) + ${stairLen.toFixed(1)} / ${EVAC_MODEL.vStair}  →  最短 ${Math.round(Math.min(...evac.tWalk))} 秒（出口 ${bestIndex + 1}）`,
+        `T* = ${evac.clearMin.toFixed(2)} 分钟（等清空时间分配，各出口清空时间趋于相同）`,
+        `T_total = ${EVAC_MODEL.reactionTime} + 60 × ${evac.clearMin.toFixed(2)} = ${Math.round(evac.totalSeconds)} 秒 ≈ ${(evac.totalSeconds / 60).toFixed(1)} 分钟`
+      ];
+      chainBox.replaceChildren(...chains.map((text) => {
+        const code = document.createElement("code");
+        code.textContent = text;
+        return code;
+      }));
+
+      const head = ["情景 / 站点", "真实数据", "出入口", "站内客流", "积水 h", "风险等级", "速度 v(h)", "最优出口", "走行时间（秒）", "清空时间 T*", "总疏散时间"];
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headRow.append(...head.map((text) => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        return th;
+      }));
+      thead.append(headRow);
+      const tbody = document.createElement("tbody");
+      for (const item of INSTANCE_CASES) {
+        const caseModel = runFloodModel(item.values);
+        const caseEvac = runEvacModel(item.values, caseModel.hFinal);
+        const caseBest = caseEvac.tWalk.indexOf(Math.min(...caseEvac.tWalk));
+        const cells = [
+          item.name,
+          item.anchor,
+          `${caseEvac.n} 个`,
+          `${Number(item.values.passengers).toLocaleString("zh-CN")} 人`,
+          `${caseModel.hFinal.toFixed(2)} m`,
+          `风险${RISK_LEVELS[caseModel.levelIndex].name}`,
+          `${caseEvac.vWalk.toFixed(3)} m/s`,
+          `出口 ${caseBest + 1}`,
+          caseEvac.tWalk.map((t) => t.toFixed(1)).join(" / "),
+          `${caseEvac.clearMin.toFixed(2)} 分`,
+          `${(caseEvac.totalSeconds / 60).toFixed(1)} 分`
+        ];
+        const row = document.createElement("tr");
+        cells.forEach((text, index) => {
+          const td = document.createElement("td");
+          td.textContent = text;
+          if (index >= 4) td.className = "num";
+          if (index === 7) td.classList.add("best-cell");
+          row.append(td);
+        });
+        tbody.append(row);
+      }
+      table.replaceChildren(thead, tbody);
     }
 
     function renderStation(values, assessment) {
@@ -1320,40 +1604,28 @@
       svg.append(defs);
 
       const level = RISK_LEVELS[assessment.levelIndex];
-      const waterHeight = 10 + assessment.levelIndex * 9;
+      const model = assessment.model;
+      const evac = runEvacModel(values, model.hFinal);
       svg.append(createSvg("rect", { x: 0, y: 0, width: 760, height: 258, fill: "#f8fcff" }));
       svg.append(createSvg("text", { x: 25, y: 28, class: "diagram-label", "font-weight": "700" }, "地面"));
       svg.append(createSvg("line", { x1: 24, y1: 42, x2: 736, y2: 42, stroke: "#afc4d5", "stroke-width": 2, "stroke-dasharray": "6 5" }));
       svg.append(createSvg("rect", { x: 220, y: 104, width: 315, height: 94, rx: 18, fill: "#edf5fb", stroke: "#cbddea", "stroke-width": 2 }));
       svg.append(createSvg("rect", { x: 234, y: 117, width: 287, height: 68, rx: 12, fill: "#fff", stroke: "#dce9f2" }));
-      // 积水水面：由动画循环持续绘制波浪
+      // 积水水面：由动画循环持续绘制波浪（水位由水量平衡模型计算）
       const waterPath = createSvg("path", { fill: level.color, opacity: ".28" });
       svg.append(waterPath);
       svg.append(createSvg("line", { x1: 244, y1: 153, x2: 511, y2: 153, stroke: "#9db3c5", "stroke-width": 3, "stroke-linecap": "round" }));
       svg.append(createSvg("text", { x: 376, y: 140, "text-anchor": "middle", class: "diagram-label", "font-weight": "700" }, "站台 / 站厅（简化示意）"));
-      svg.append(createSvg("text", { x: 376, y: 174, "text-anchor": "middle", class: "diagram-small" }, `情景参考等级：风险${level.name}`));
+      svg.append(createSvg("text", { x: 376, y: 174, "text-anchor": "middle", class: "diagram-small" }, `预估积水 ${model.hFinal.toFixed(2)} 米 · 风险${level.name}`));
       svg.append(createSvg("text", { x: 376, y: 220, "text-anchor": "middle", class: "diagram-small" }, "地下空间"));
 
-      // ---- 出口布局：1–8 个出口 ----
-      const n = Math.max(1, Math.min(8, Math.round(values.entrances)));
+      // ---- 出口布局与最优路线 ----
       const centerX = 376;
-      let topXs;
-      if (n === 1) topXs = [centerX];
-      else if (n === 2) topXs = [230, 522];
-      else if (n === 3) topXs = [180, 376, 572];
-      else topXs = Array.from({ length: n }, (_, i) => 70 + ((i + 0.5) / n) * 620);
+      const bestIndex = evac.tWalk.indexOf(Math.min(...evac.tWalk));
 
-      // ---- 人数分配与最优路线（演示模型）----
-      const capacityPerMin = 60;
-      const dist = topXs.map((x) => Math.abs(x - centerX) + 60);
-      const weights = dist.map((d) => 1 / d);
-      const wSum = weights.reduce((a, b) => a + b, 0);
-      const perExit = weights.map((w) => values.passengers * (w / wSum));
-      const clearTimes = perExit.map((p, i) => p / capacityPerMin + dist[i] / 50);
-      const bestIndex = clearTimes.indexOf(Math.min(...clearTimes));
-
-      topXs.forEach((topX, index) => {
+      evac.px.forEach((topX, index) => {
         const best = index === bestIndex;
+        const used = evac.used.includes(index);
         svg.append(createSvg("path", { d: `M ${centerX} 117 L ${centerX} 82 L ${topX} 82 L ${topX} 49`, fill: "none", stroke: "#98b8cf", "stroke-width": 8, "stroke-linecap": "round", "stroke-linejoin": "round" }));
         svg.append(createSvg("path", { d: `M ${centerX} 117 L ${centerX} 82 L ${topX} 82 L ${topX} 49`, fill: "none", stroke: "#f8fcff", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }));
         const arrowColor = best ? "#258b70" : "#3b93d0";
@@ -1367,31 +1639,36 @@
         svg.append(createSvg("text", { x: topX, y: 44, "text-anchor": "middle", class: "diagram-small", fill: best ? "#1e7a5d" : "#367bac", "font-weight": best ? "700" : "400" }, `出口 ${index + 1}${best ? " ★" : ""}`));
         const labelX = (centerX + topX) / 2;
         const labelY = 99;
-        svg.append(createSvg("text", { x: labelX, y: labelY, "text-anchor": "middle", class: "diagram-small", fill: arrowColor, "font-weight": "700" }, `约 ${Math.round(perExit[index]).toLocaleString("zh-CN")} 人`));
+        svg.append(createSvg("text", { x: labelX, y: labelY, "text-anchor": "middle", class: "diagram-small", fill: used ? arrowColor : "#9fb2c2", "font-weight": "700" }, used ? `${Math.round(evac.counts[index]).toLocaleString("zh-CN")} 人` : "0 人"));
         if (best) {
           svg.append(createSvg("text", { x: topX, y: 22, "text-anchor": "middle", class: "diagram-small", fill: "#258b70", "font-weight": "700" }, "最优路线"));
         }
       });
 
-      svg.append(createSvg("text", { x: 25, y: 240, class: "diagram-small" }, `输入出入口：${values.entrances} 个 · 图中展示 ${n} 个示意出口`));
-      svg.append(createSvg("text", { x: 735, y: 240, "text-anchor": "end", class: "diagram-small" }, `站内客流：${values.passengers.toLocaleString("zh-CN")} 人（示意）`));
+      const totalMin = Math.round(evac.totalSeconds / 6) / 10;
+      svg.append(createSvg("text", { x: 25, y: 240, class: "diagram-small" }, `输入出入口：${values.entrances} 个 · 图中展示 ${evac.n} 个示意出口`));
+      svg.append(createSvg("text", { x: 735, y: 240, "text-anchor": "end", class: "diagram-small" }, `站内客流 ${Number(values.passengers).toLocaleString("zh-CN")} 人 · 总疏散约 ${totalMin} 分钟`));
 
       // ---- 图例：线路人数与最优路线 ----
       const legend = byId("evac-legend");
       legend.replaceChildren();
-      topXs.forEach((_, index) => {
+      evac.px.forEach((_, index) => {
         const span = document.createElement("span");
         const line = document.createElement("span");
         line.className = `legend-line${index === bestIndex ? " best" : ""}`;
-        span.append(line, document.createTextNode(`出口 ${index + 1}：约 ${Math.round(perExit[index]).toLocaleString("zh-CN")} 人${index === bestIndex ? "（最优路线，预计清空最快）" : ""}`));
+        const used = evac.used.includes(index);
+        const text = used
+          ? `出口 ${index + 1}：约 ${Math.round(evac.counts[index]).toLocaleString("zh-CN")} 人 · 走行 ${Math.round(evac.tWalk[index])} 秒 · 清空约 ${(evac.tWalk[index] / 60 + evac.counts[index] / evac.C).toFixed(1)} 分钟`
+          : `出口 ${index + 1}：走行 ${Math.round(evac.tWalk[index])} 秒，距离较远本次不分配`;
+        span.append(line, document.createTextNode(`${text}${index === bestIndex ? "（最优路线）" : ""}`));
         legend.append(span);
       });
       const note = document.createElement("span");
-      note.textContent = `按离站台距离分配客流 · 每出口通行 ${capacityPerMin} 人/分钟（演示假设）`;
+      note.textContent = `等清空时间最优分配 · 每出口通行约 ${Math.round(evac.C)} 人/分钟（有效宽 ${evac.width.toFixed(1)} 米 × 比流量 ${EVAC_MODEL.specificFlow} 人/米/秒）· 积水 ${evac.hFinal.toFixed(2)} 米时步行速度 ${evac.vWalk.toFixed(2)} 米/秒`;
       legend.append(note);
 
-      // ---- 积水动画参数 ----
-      const targetY = 185 - waterHeight;
+      // ---- 积水动画参数：水位由模型计算，映射到示意剖面 ----
+      const targetY = model.hFinal <= 0.01 ? 184 : Math.max(115, 153 - Math.min(1.4, model.hFinal) * 28);
       stationWater = {
         path: waterPath,
         y: stationWater ? stationWater.targetY : targetY,
@@ -1404,7 +1681,7 @@
       };
       if (!stationWaterRaf) stationWaterRaf = requestAnimationFrame(animateStationWater);
 
-      svg.setAttribute("aria-label", `${values.station || "单站"}简化示意图，风险等级为${level.name}，站内客流${values.passengers}人，${n}个出口，最优疏散路线为出口${bestIndex + 1}`);
+      svg.setAttribute("aria-label", `${values.station || "单站"}简化示意图，预估积水${model.hFinal.toFixed(2)}米，风险等级${level.name}，站内客流${values.passengers}人，${evac.n}个出口，最优疏散路线为出口${bestIndex + 1}`);
     }
 
     let stationWater = null;
